@@ -9,7 +9,8 @@ public record EmployeeDataResponse(
         @JsonProperty("lastName") String lastName,
         @JsonProperty("jobTitle") String jobTitle,
         @JsonProperty("phoneNumber") String phoneNumber,
-        @JsonProperty("email") String email
+        @JsonProperty("email") String email,
+        @JsonProperty("imageUrl") String imageUrl
 ) {
     public EmployeeDataResponse(Employee employee) {
         this(
@@ -18,7 +19,8 @@ public record EmployeeDataResponse(
                 employee.getLastName(),
                 employee.getJobTitle(),
                 employee.getPhoneNumber(),
-                employee.getEmail()
+                employee.getEmail(),
+                employee.getImageUrl()
         );
     }
 }

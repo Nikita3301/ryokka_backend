@@ -1,7 +1,8 @@
 package com.sora.ryokka.service.impl;
 
-import com.sora.ryokka.dto.response.ProjectDataResponse;
+import com.sora.ryokka.model.ProjectImage;
 import com.sora.ryokka.model.Project;
+import com.sora.ryokka.repository.ImageRepository;
 import com.sora.ryokka.repository.ProjectRepository;
 import com.sora.ryokka.service.ProjectService;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectServiceImpl(ProjectRepository projectRepository) {
         this.projectRepository = projectRepository;
     }
+
 
     @Override
     public List<Project> getAllProjects() {

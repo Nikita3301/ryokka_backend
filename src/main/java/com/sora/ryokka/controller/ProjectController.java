@@ -1,5 +1,6 @@
 package com.sora.ryokka.controller;
 
+import com.sora.ryokka.dto.response.DetailsProjectDataResponse;
 import com.sora.ryokka.dto.response.ProjectDataResponse;
 import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Project;
@@ -22,44 +23,44 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
+
     @GetMapping
     public ResponseEntity<List<ProjectDataResponse>> getAllProjects() {
         List<Project> projects = projectService.getAllProjects();
-        List<ProjectDataResponse> projectDataResponses = new ArrayList<>();
+        List<ProjectDataResponse> projectDataResponse = new ArrayList<>();
 
         for (Project project : projects) {
             ProjectDataResponse dto = new ProjectDataResponse(project);
-            projectDataResponses.add(dto);
+            projectDataResponse.add(dto);
         }
 
-        return ResponseEntity.ok().body(projectDataResponses);
+        return ResponseEntity.ok().body(projectDataResponse);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProjectDataResponse> getProjectById(@PathVariable Integer id) {
+    public ResponseEntity<DetailsProjectDataResponse> getProjectById(@PathVariable Integer id) {
         Optional<Project> optionalProject = projectService.getProjectById(id);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
-            return ResponseEntity.ok().body(new ProjectDataResponse(project));
+            return ResponseEntity.ok().body(new DetailsProjectDataResponse(project));
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-
     @PostMapping
-    public ResponseEntity<ProjectDataResponse> createProject(@RequestBody Project project) {
+    public ResponseEntity<DetailsProjectDataResponse> createProject(@RequestBody Project project) {
         Project createdProject = projectService.createProject(project);
-        ProjectDataResponse dto = new ProjectDataResponse(createdProject);
+        DetailsProjectDataResponse dto = new DetailsProjectDataResponse(createdProject);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProjectDataResponse> updateProject(@PathVariable Integer id, @RequestBody Project project) {
+    public ResponseEntity<DetailsProjectDataResponse> updateProject(@PathVariable Integer id, @RequestBody Project project) {
         try {
             Project updatedProject = projectService.updateProject(id, project);
-            ProjectDataResponse dto = new ProjectDataResponse(updatedProject);
+            DetailsProjectDataResponse dto = new DetailsProjectDataResponse(updatedProject);
             return ResponseEntity.ok().body(dto);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

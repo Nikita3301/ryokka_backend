@@ -34,6 +34,9 @@ public class Employee {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<ProjectEmployee> projectEmployees;
 }

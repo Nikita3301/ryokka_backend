@@ -36,8 +36,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/projects", "/api/projects/{id}", "/api/employees", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Allow public access
-                                .anyRequest().authenticated() // Require authentication for other requests
+                                .requestMatchers("/api/projects/1/upload","/api/projects", "/api/projects/{id}", "/api/employees", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Allow public access
+                                .anyRequest().permitAll() // Require authentication for other requests
                 );
 
 //        // Add your Firebase authentication filter

@@ -6,4 +6,5 @@ public class WebConstants {
     public static final String API_BASE_PATH = "/api/**";
 
     private WebConstants() {}
+
 }
