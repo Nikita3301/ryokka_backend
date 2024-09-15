@@ -65,7 +65,6 @@ public class ProjectImagesController {
 
             return ResponseEntity.ok(imageDataResponses);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(500).body("An error occurred while fetching images.");
         }
     }

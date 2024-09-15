@@ -15,8 +15,11 @@ import java.util.Optional;
 @RequestMapping("/api/invoices")
 public class InvoiceController {
 
-    @Autowired
-    private InvoiceService invoiceService;
+    private final InvoiceService invoiceService;
+
+    public InvoiceController(InvoiceService invoiceService) {
+        this.invoiceService = invoiceService;
+    }
 
     @GetMapping
     public ResponseEntity<List<Invoice>> getAllInvoices() {

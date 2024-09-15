@@ -1,5 +1,7 @@
 package com.sora.ryokka.controller;
 
+import com.sora.ryokka.dto.request.CreateEmployeeRequest;
+import com.sora.ryokka.dto.request.UpdateEmployeeRequest;
 import com.sora.ryokka.dto.response.EmployeeDataResponse;
 import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Employee;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +20,11 @@ import java.util.Optional;
 @RequestMapping("/api/employees")
 public class EmployeeController {
 
-    @Autowired
-    private EmployeeService employeeService;
+    private final EmployeeService employeeService;
+
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
 
     // Get all employees
     @GetMapping
@@ -47,20 +53,14 @@ public class EmployeeController {
 
     // Create a new employee
     @PostMapping
-    public ResponseEntity<EmployeeDataResponse> createEmployee(@RequestBody Employee employee) {
-        Employee createdEmployee = employeeService.createEmployee(employee);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new EmployeeDataResponse(createdEmployee));
+    public ResponseEntity<?> createEmployee(@RequestParam("imageFile") MultipartFile imageFile, @ModelAttribute CreateEmployeeRequest createEmployeeRequest) {
+        return employeeService.createEmployee(imageFile, createEmployeeRequest);
     }
 
     // Update an employee
-    @PutMapping("/{id}")
-    public ResponseEntity<EmployeeDataResponse> updateEmployee(@PathVariable("id") int id, @RequestBody Employee employee) {
-        Employee updatedEmployee = employeeService.updateEmployee(id, employee);
-        if (updatedEmployee != null) {
-            return ResponseEntity.ok(new EmployeeDataResponse(updatedEmployee));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PutMapping
+    public ResponseEntity<EmployeeDataResponse> updateEmployee(@RequestParam(value="imageFile", required = false) MultipartFile imageFile, @ModelAttribute UpdateEmployeeRequest updateEmployeeRequest) {
+        return employeeService.updateEmployee(imageFile, updateEmployeeRequest);
     }
 
     // Delete an employee

@@ -6,9 +6,13 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.sora.ryokka.dto.request.CreateEmployeeRequest;
+import com.sora.ryokka.dto.request.UpdateEmployeeRequest;
+import com.sora.ryokka.dto.response.EmployeeDataResponse;
 import com.sora.ryokka.model.Employee;
 import com.sora.ryokka.repository.EmployeeRepository;
 import com.sora.ryokka.service.EmployeeService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,8 +29,6 @@ import java.util.UUID;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
-
-
     private final EmployeeRepository employeeRepository;
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
@@ -44,23 +46,57 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee createEmployee(Employee employee) {
-        return employeeRepository.save(employee);
+    public ResponseEntity<?> createEmployee(MultipartFile imageFile, CreateEmployeeRequest createEmployeeRequest) {
+        try {
+            Employee newEmployee = new Employee();
+            String fileName = imageFile.getOriginalFilename();
+            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
+
+            File tempFile = this.convertToFile(imageFile, fileName);
+            String imageUrl = this.uploadFile(tempFile, fileName);
+
+            newEmployee.setFirstName(createEmployeeRequest.firstName());
+            newEmployee.setLastName(createEmployeeRequest.lastName());
+            newEmployee.setJobTitle(createEmployeeRequest.jobTitle());
+            newEmployee.setPhoneNumber(createEmployeeRequest.phoneNumber());
+            newEmployee.setEmail(createEmployeeRequest.email());
+            newEmployee.setImageUrl(imageUrl);
+            employeeRepository.save(newEmployee);
+            return ResponseEntity.ok(newEmployee);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to create employee: " + e.getMessage());
+        }
+
     }
 
     @Override
-    public Employee updateEmployee(int id, Employee updatedEmployee) {
-        Optional<Employee> existingEmployee = employeeRepository.findById(id);
+    public ResponseEntity<EmployeeDataResponse> updateEmployee(MultipartFile imageFile, UpdateEmployeeRequest updateEmployeeRequest) {
+        Optional<Employee> existingEmployee = employeeRepository.findById(updateEmployeeRequest.employeeId());
         if (existingEmployee.isPresent()) {
             Employee employee = existingEmployee.get();
-            employee.setFirstName(updatedEmployee.getFirstName());
-            employee.setLastName(updatedEmployee.getLastName());
-            employee.setJobTitle(updatedEmployee.getJobTitle());
-            employee.setPhoneNumber(updatedEmployee.getPhoneNumber());
-            employee.setEmail(updatedEmployee.getEmail());
-            return employeeRepository.save(employee);
+            employee.setFirstName(updateEmployeeRequest.firstName());
+            employee.setLastName(updateEmployeeRequest.lastName());
+            employee.setJobTitle(updateEmployeeRequest.jobTitle());
+            employee.setPhoneNumber(updateEmployeeRequest.phoneNumber());
+            employee.setEmail(updateEmployeeRequest.email());
+
+
+            if (imageFile != null && !imageFile.isEmpty()) {
+                try {
+                    String fileName = imageFile.getOriginalFilename();
+                    fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
+                    File tempFile = this.convertToFile(imageFile, fileName);
+                    String imageUrl = this.uploadFile(tempFile, fileName);
+                    employee.setImageUrl(imageUrl);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            employeeRepository.save(employee);
+            return ResponseEntity.ok(new EmployeeDataResponse(employee));
         }
-        throw new RuntimeException("Employee not found with id " + id);
+        throw new RuntimeException("Employee not found with id " + updateEmployeeRequest.employeeId());
     }
 
     @Override
@@ -76,13 +112,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             File tempFile = this.convertToFile(file, fileName);
             String imageUrl = this.uploadFile(tempFile, fileName);
-            tempFile.delete();
 
             updateEmployeeImage(employeeId, imageUrl);
 
             return imageUrl;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Image upload failed", e);
         }
     }

@@ -84,7 +84,6 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
             File tempFile = this.convertToFile(file, fileName);
             String imageUrl = this.uploadFile(tempFile, fileName);
-            tempFile.delete();
 
             Project project = projectRepository.findById(projectId)
                     .orElseThrow(() -> new RuntimeException("Project not found"));
