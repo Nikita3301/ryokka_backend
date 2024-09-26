@@ -15,7 +15,7 @@ public record ResourceDataResponse(
 ) {
     public ResourceDataResponse(Resource resource) {
         this(
-                resource.getResource_id(),
+                resource.getResourceId(),
                 resource.getResourceName(),
                 resource.getResourceDescription(),
                 resource.getResourceType(),

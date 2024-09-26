@@ -12,6 +12,6 @@ import java.util.Objects;
 @Setter
 public class ProjectEmployeeId implements Serializable {
 
-    private int projectId;
+    private Long projectId;
     private int employeeId;
 }

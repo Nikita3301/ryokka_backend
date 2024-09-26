@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @Setter
+@Table
 public class ProjectImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +17,7 @@ public class ProjectImage {
 
     @Column(name = "url")
     private String url;
+
     @Column(name = "file_name")
     private String fileName;
 

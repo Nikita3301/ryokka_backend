@@ -3,10 +3,10 @@ package com.sora.ryokka.service.impl;
 import com.sora.ryokka.model.Client;
 import com.sora.ryokka.repository.ClientRepository;
 import com.sora.ryokka.service.ClientService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ClientServiceImpl implements ClientService {
@@ -20,6 +20,13 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public List<Client> getAllClients() {
         return clientRepository.findAll();
+    }
+
+    @Override
+    public List<Client> getClientsWithoutProjects() {
+        return clientRepository.findAll().stream()
+                .filter(client -> client.getProjects() == null || client.getProjects().isEmpty())
+                .collect(Collectors.toList());
     }
 
     @Override
