@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sora.ryokka.model.Employee;
 
 public record EmployeeDataResponse(
-        @JsonProperty("employeeId") int employeeId,
+        @JsonProperty("employeeId") Long employeeId,
         @JsonProperty("firstName") String firstName,
         @JsonProperty("lastName") String lastName,
         @JsonProperty("jobTitle") String jobTitle,

@@ -13,7 +13,8 @@ import java.util.List;
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int employeeId;
+    @Column(name = "employee_id")
+    private Long employeeId;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;

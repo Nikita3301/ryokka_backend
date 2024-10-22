@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,6 +15,7 @@ import java.util.List;
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "project_id")
     private Long projectId;
 
     @Column(name = "project_name", nullable = false)
@@ -43,14 +45,14 @@ public class Project {
     private Double projectBudget;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<Resource> resources;
+    private List<Resource> resources = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<ProjectEmployee> projectEmployees;
+    private List<ProjectEmployee> projectEmployees = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
-    private List<Invoice> invoices;
+    private List<Invoice> invoices = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ProjectImage> projectImages;
+    private List<ProjectImage> projectImages = new ArrayList<>();
 }

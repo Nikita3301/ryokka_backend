@@ -16,7 +16,7 @@ public class EmployeeImagesController {
 
     @PostMapping("/{employeeId}/upload")
     public ResponseEntity<String> uploadEmployeeImage(
-            @PathVariable Integer employeeId,
+            @PathVariable Long employeeId,
             @RequestParam("file") MultipartFile file) {
         try {
             employeeService.uploadEmployeeImage(file, employeeId);
@@ -29,7 +29,7 @@ public class EmployeeImagesController {
 
     @PostMapping("/{employeeId}/updateImage")
     public ResponseEntity<String> updateEmployeeImage(
-            @PathVariable Integer employeeId,
+            @PathVariable Long employeeId,
             @RequestParam String imageUrl) {
         try {
         employeeService.updateEmployeeImage(employeeId, imageUrl);

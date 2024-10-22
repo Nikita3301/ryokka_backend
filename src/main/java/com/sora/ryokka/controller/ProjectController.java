@@ -1,10 +1,12 @@
 package com.sora.ryokka.controller;
 
+import com.sora.ryokka.dto.request.CreateProjectRequest;
 import com.sora.ryokka.dto.response.DetailsProjectDataResponse;
 import com.sora.ryokka.dto.response.ProjectDataResponse;
 import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Project;
 import com.sora.ryokka.service.ProjectService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +40,7 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<DetailsProjectDataResponse> getProjectById(@PathVariable Integer id) {
+    public ResponseEntity<DetailsProjectDataResponse> getProjectById(@PathVariable Long id) {
         Optional<Project> optionalProject = projectService.getProjectById(id);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
@@ -49,15 +51,14 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<DetailsProjectDataResponse> createProject(@RequestBody Project project) {
-        Project createdProject = projectService.createProject(project);
-        DetailsProjectDataResponse dto = new DetailsProjectDataResponse(createdProject);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    public ResponseEntity<DetailsProjectDataResponse> createProject(@RequestBody CreateProjectRequest projectRequest) {
+        DetailsProjectDataResponse createdProjectDTO = projectService.createProject(projectRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProjectDTO);
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<DetailsProjectDataResponse> updateProject(@PathVariable Integer id, @RequestBody Project project) {
+    public ResponseEntity<DetailsProjectDataResponse> updateProject(@PathVariable Long id, @RequestBody Project project) {
         try {
             Project updatedProject = projectService.updateProject(id, project);
             DetailsProjectDataResponse dto = new DetailsProjectDataResponse(updatedProject);
@@ -68,7 +69,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
         try {
             projectService.deleteProject(id);
             return ResponseEntity.noContent().build();

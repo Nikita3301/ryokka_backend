@@ -34,7 +34,7 @@ public class ProjectImagesController {
 
 
     @PostMapping("/{projectId}/upload")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,  @PathVariable Integer projectId, @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file,  @PathVariable Long projectId, @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         String url = projectImagesService.uploadProjectImage(file, projectId, date);
         return ResponseEntity.ok(url);
     }
@@ -42,7 +42,7 @@ public class ProjectImagesController {
     @PostMapping("/{projectId}/uploadImages")
     public ResponseEntity<List<String>> uploadImages(
             @RequestParam("files") List<MultipartFile> files,
-            @PathVariable Integer projectId,
+            @PathVariable Long projectId,
             @RequestParam("dates") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> dates) {
 
         List<String> urls = projectImagesService.uploadProjectImages(files,dates, projectId);
@@ -51,7 +51,7 @@ public class ProjectImagesController {
 
 
     @GetMapping("/{projectId}")
-    public ResponseEntity<?> getProjectImages(@PathVariable Integer projectId) {
+    public ResponseEntity<?> getProjectImages(@PathVariable Long projectId) {
         try {
             List<ProjectImage> projectImages = projectImagesService.getProjectImages(projectId);
 
@@ -70,7 +70,7 @@ public class ProjectImagesController {
     }
 
     @PostMapping("/{imageId}/main")
-    public ResponseEntity<String> setMainImage(@PathVariable Integer imageId, @RequestParam Integer projectId) {
+    public ResponseEntity<String> setMainImage(@PathVariable Long imageId, @RequestParam Long projectId) {
         try {
             projectImagesService.setMainImage(imageId, projectId);
             return ResponseEntity.ok("Image set as main successfully.");
@@ -81,7 +81,7 @@ public class ProjectImagesController {
 
 
     @GetMapping("/main/{projectId}")
-    public ResponseEntity<?> getMainProjectImage(@PathVariable Integer projectId) {
+    public ResponseEntity<?> getMainProjectImage(@PathVariable Long projectId) {
         try {
 
             ProjectImage mainImage = projectImagesService.getMainImage(projectId);
@@ -94,7 +94,7 @@ public class ProjectImagesController {
     }
 
     @DeleteMapping("/images/{imageId}")
-    public ResponseEntity<?> deleteImage(@PathVariable Integer imageId) {
+    public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
         try {
             projectImagesService.deleteImageById(imageId);
             return ResponseEntity.ok("Image deleted successfully.");

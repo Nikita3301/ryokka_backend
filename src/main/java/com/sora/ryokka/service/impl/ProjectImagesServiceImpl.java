@@ -77,7 +77,7 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
     }
 
     @Override
-    public String uploadProjectImage(MultipartFile file, Integer projectId, LocalDate date) {
+    public String uploadProjectImage(MultipartFile file, Long projectId, LocalDate date) {
         try {
             String fileName = file.getOriginalFilename();
             fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
@@ -103,7 +103,7 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
     }
 
     @Override
-    public List<String> uploadProjectImages(List<MultipartFile> files, List<LocalDate> dates, Integer projectId) {
+    public List<String> uploadProjectImages(List<MultipartFile> files, List<LocalDate> dates, Long projectId) {
         List<String> imageUrls = new ArrayList<>();
 
         try {
@@ -141,7 +141,7 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
 
     @Override
-    public void setMainImage(Integer imageId, Integer projectId) {
+    public void setMainImage(Long imageId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
@@ -158,14 +158,14 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
     }
 
     @Override
-    public List<ProjectImage> getProjectImages(Integer projectId) {
+    public List<ProjectImage> getProjectImages(Long projectId) {
         System.out.println("Result" +
                 imageRepository.findByProjectProjectId(projectId));
         return imageRepository.findByProjectProjectId(projectId);
     }
 
     @Override
-    public ProjectImage getMainImage(Integer projectId) {
+    public ProjectImage getMainImage(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
         return imageRepository.findByProjectAndIsMainImageTrue(project);
@@ -173,7 +173,7 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
 
 @Override
-    public void deleteImageById(Integer imageId) {
+    public void deleteImageById(Long imageId) {
         imageRepository.deleteById(imageId);
     }
 }

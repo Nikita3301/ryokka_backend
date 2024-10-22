@@ -1,10 +1,14 @@
 package com.sora.ryokka.service.impl;
 
-import com.sora.ryokka.model.ProjectImage;
+import com.sora.ryokka.dto.request.CreateProjectRequest;
+import com.sora.ryokka.dto.response.DetailsProjectDataResponse;
+import com.sora.ryokka.model.Client;
 import com.sora.ryokka.model.Project;
-import com.sora.ryokka.repository.ImageRepository;
+import com.sora.ryokka.model.ProjectStatus;
+import com.sora.ryokka.repository.ClientRepository;
 import com.sora.ryokka.repository.ProjectRepository;
 import com.sora.ryokka.service.ProjectService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +19,12 @@ public class ProjectServiceImpl implements ProjectService {
 
 
     private final ProjectRepository projectRepository;
+    private final ClientRepository clientRepository;
 
-    public ProjectServiceImpl(ProjectRepository projectRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, ClientRepository clientRepository) {
         this.projectRepository = projectRepository;
+        this.clientRepository = clientRepository;
     }
-
 
     @Override
     public List<Project> getAllProjects() {
@@ -27,17 +32,44 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public Optional<Project> getProjectById(int projectId) {
+    public Optional<Project> getProjectById(Long projectId) {
         return projectRepository.findById(projectId);
     }
 
     @Override
-    public Project createProject(Project project) {
-        return projectRepository.save(project);
+    public DetailsProjectDataResponse createProject(CreateProjectRequest projectRequest) {
+
+        System.out.println("Creating project with the following details:");
+        System.out.println("Project Name: " + projectRequest.projectName());
+        System.out.println("Project Description: " + projectRequest.projectDescription());
+        System.out.println("Project Location: " + projectRequest.projectLocation());
+        System.out.println("Project Status: " + projectRequest.projectStatus());
+        System.out.println("Start Date: " + projectRequest.startDate());
+        System.out.println("End Date: " + projectRequest.endDate());
+        System.out.println("Budget: " + projectRequest.projectBudget());
+        System.out.println("Client ID: " + projectRequest.clientId());
+
+        Client client = clientRepository.findById(projectRequest.clientId())
+                .orElseThrow(() -> new EntityNotFoundException("Client not found with ID: " + projectRequest.clientId()));
+
+        Project project = new Project();
+        project.setProjectName(projectRequest.projectName());
+        project.setProjectDescription(projectRequest.projectDescription());
+        project.setProjectLocation(projectRequest.projectLocation());
+        project.setProjectStatus(ProjectStatus.fromDescription(projectRequest.projectStatus()));
+        project.setStartDate(projectRequest.startDate());
+        project.setEndDate(projectRequest.endDate());
+        project.setProjectBudget(projectRequest.projectBudget());
+        project.setClient(client);
+
+        Project createdProject = projectRepository.save(project);
+
+        return new DetailsProjectDataResponse(createdProject);
     }
 
+
     @Override
-    public Project updateProject(int projectId, Project updatedProject) {
+    public Project updateProject(Long projectId, Project updatedProject) {
         return projectRepository.findById(projectId)
                 .map(project -> {
                     project.setProjectName(updatedProject.getProjectName());
@@ -53,7 +85,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void deleteProject(int projectId) {
+    public void deleteProject(Long projectId) {
         projectRepository.deleteById(projectId);
     }
 }

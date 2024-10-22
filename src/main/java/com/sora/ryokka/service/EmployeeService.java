@@ -12,10 +12,10 @@ import java.util.Optional;
 
 public interface EmployeeService {
     List<Employee> getAllEmployees();
-    Optional<Employee> getEmployeeById(int id);
+    Optional<Employee> getEmployeeById(Long id);
     ResponseEntity<?> createEmployee(MultipartFile imageFile, CreateEmployeeRequest createEmployeeRequest);
     ResponseEntity<EmployeeDataResponse> updateEmployee(MultipartFile imageFile, UpdateEmployeeRequest updateEmployeeRequest);
-    void deleteEmployee(int id);
-    String uploadEmployeeImage(MultipartFile file, Integer employeeId);
-    void updateEmployeeImage(Integer employeeId, String imageUrl);
+    void deleteEmployee(Long id);
+    String uploadEmployeeImage(MultipartFile file, Long employeeId);
+    void updateEmployeeImage(Long employeeId, String imageUrl);
 }

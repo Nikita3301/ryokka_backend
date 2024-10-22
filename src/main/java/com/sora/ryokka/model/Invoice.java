@@ -17,7 +17,7 @@ import java.sql.Date;
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int invoiceId;
+    private Integer invoiceId;
 
     @Column(name = "invoice_name")
     private String invoiceName;

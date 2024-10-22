@@ -41,7 +41,7 @@ public class EmployeeController {
 
     // Get an employee by ID
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeDataResponse> getEmployeeById(@PathVariable("id") int id) {
+    public ResponseEntity<EmployeeDataResponse> getEmployeeById(@PathVariable("id") Long id) {
         Optional<Employee> optionalEmployee = employeeService.getEmployeeById(id);
         if (optionalEmployee.isPresent()) {
             Employee employee = optionalEmployee.get();
@@ -65,7 +65,7 @@ public class EmployeeController {
 
     // Delete an employee
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable("id") int id) {
+    public ResponseEntity<Void> deleteEmployee(@PathVariable("id") Long id) {
         try {
             employeeService.deleteEmployee(id);
             return ResponseEntity.noContent().build();

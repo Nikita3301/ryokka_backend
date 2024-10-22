@@ -41,7 +41,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Optional<Employee> getEmployeeById(int id) {
+    public Optional<Employee> getEmployeeById(Long id) {
         return employeeRepository.findById(id);
     }
 
@@ -100,12 +100,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void deleteEmployee(int id) {
+    public void deleteEmployee(Long id) {
         employeeRepository.deleteById(id);
     }
 
     @Override
-    public String uploadEmployeeImage(MultipartFile file, Integer employeeId) {
+    public String uploadEmployeeImage(MultipartFile file, Long employeeId) {
         try {
             String fileName = file.getOriginalFilename();
             fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
@@ -123,7 +123,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
     @Override
-    public void updateEmployeeImage(Integer employeeId, String imageUrl) {
+    public void updateEmployeeImage(Long employeeId, String imageUrl) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         employee.setImageUrl(imageUrl);

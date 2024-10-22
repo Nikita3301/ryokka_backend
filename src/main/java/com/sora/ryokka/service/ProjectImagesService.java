@@ -12,15 +12,15 @@ public interface ProjectImagesService {
 
     List<ImageDataResponse> getAllImages();
 
-    String uploadProjectImage(MultipartFile file, Integer projectId, LocalDate date);
+    String uploadProjectImage(MultipartFile file, Long projectId, LocalDate date);
 
-    void setMainImage(Integer imageId, Integer projectId);
+    void setMainImage(Long imageId, Long projectId);
 
-    List<ProjectImage> getProjectImages(Integer projectId);
+    List<ProjectImage> getProjectImages(Long projectId);
 
-    ProjectImage getMainImage(Integer projectId);
+    ProjectImage getMainImage(Long projectId);
 
-    List<String> uploadProjectImages(List<MultipartFile> files, List<LocalDate> dates, Integer projectId);
+    List<String> uploadProjectImages(List<MultipartFile> files, List<LocalDate> dates, Long projectId);
 
-    void deleteImageById(Integer imageId);
+    void deleteImageById(Long imageId);
 }

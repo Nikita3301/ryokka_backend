@@ -53,7 +53,7 @@ public class EmployeeImagesServiceImpl implements EmployeeImagesService {
     }
 
     @Override
-    public String uploadEmployeeImage(MultipartFile file, Integer employeeId) {
+    public String uploadEmployeeImage(MultipartFile file, Long employeeId) {
         try {
             String fileName = file.getOriginalFilename();
             fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
@@ -72,7 +72,7 @@ public class EmployeeImagesServiceImpl implements EmployeeImagesService {
     }
 
     @Override
-    public void updateEmployeeImage(Integer employeeId, String imageUrl) {
+    public void updateEmployeeImage(Long employeeId, String imageUrl) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
         employee.setImageUrl(imageUrl);

@@ -21,20 +21,19 @@ public class ClientController {
 
     @PostMapping
     public ResponseEntity<ClientDataResponse> createClient(@RequestBody Client client) {
-        Client newClient = clientService.createClient(client);
-        ClientDataResponse response = new ClientDataResponse(newClient);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        ClientDataResponse newClientResponse = clientService.createClient(client);
+        return new ResponseEntity<>(newClientResponse, HttpStatus.CREATED);
     }
 
     @PutMapping("/{clientId}")
-    public ResponseEntity<ClientDataResponse> updateClient(@PathVariable Integer clientId, @RequestBody Client client) {
+    public ResponseEntity<ClientDataResponse> updateClient(@PathVariable Long clientId, @RequestBody Client client) {
         Client updatedClient = clientService.updateClient(clientId, client);
         ClientDataResponse response = new ClientDataResponse(updatedClient);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/{clientId}")
-    public ResponseEntity<ClientDataResponse> getClientById(@PathVariable Integer clientId) {
+    public ResponseEntity<ClientDataResponse> getClientById(@PathVariable Long clientId) {
         Client client = clientService.getClientById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Client not found"));
         ClientDataResponse response = new ClientDataResponse(client);
@@ -60,7 +59,7 @@ public class ClientController {
     }
 
     @DeleteMapping("/{clientId}")
-    public ResponseEntity<Void> deleteClient(@PathVariable Integer clientId) {
+    public ResponseEntity<Void> deleteClient(@PathVariable Long clientId) {
         clientService.deleteClient(clientId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

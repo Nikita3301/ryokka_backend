@@ -8,7 +8,7 @@ public record UpdateEmployeeRequest(
 
         @NotBlank
         @JsonProperty("employeeId")
-        Integer employeeId,
+        Long employeeId,
 
         @NotBlank
         @JsonProperty("firstName")
