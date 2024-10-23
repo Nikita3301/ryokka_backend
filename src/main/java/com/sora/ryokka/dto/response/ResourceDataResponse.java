@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sora.ryokka.model.Resource;
 
 public record ResourceDataResponse(
-        @JsonProperty("resourceId") int resourceId,
+        @JsonProperty("resourceId") Long resourceId,
         @JsonProperty("resourceName") String resourceName,
         @JsonProperty("resourceDescription") String resourceDescription,
         @JsonProperty("resourceType") String resourceType,

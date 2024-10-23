@@ -8,7 +8,7 @@ import com.sora.ryokka.model.InvoiceStatus;
 import java.sql.Date;
 
 public record InvoiceDataResponse(
-        @JsonProperty("invoiceId") int invoiceId,
+        @JsonProperty("invoiceId") Long invoiceId,
         @JsonProperty("invoiceName") String invoiceName,
         @JsonProperty("invoiceDescription") String invoiceDescription,
         @JsonProperty("issueDate") Date issueDate,

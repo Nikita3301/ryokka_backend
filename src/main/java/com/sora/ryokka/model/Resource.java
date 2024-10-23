@@ -11,7 +11,7 @@ import lombok.Setter;
 public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int resourceId;
+    private Long resourceId;
 
     @Column(name = "resource_name", nullable = false)
     private String resourceName;

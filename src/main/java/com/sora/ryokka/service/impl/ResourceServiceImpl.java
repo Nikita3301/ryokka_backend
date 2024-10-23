@@ -1,9 +1,12 @@
 package com.sora.ryokka.service.impl;
 
+import com.sora.ryokka.dto.request.CreateResourceRequest;
+import com.sora.ryokka.exception.ResourceNotFoundException;
+import com.sora.ryokka.model.Project;
 import com.sora.ryokka.model.Resource;
+import com.sora.ryokka.repository.ProjectRepository;
 import com.sora.ryokka.repository.ResourceRepository;
 import com.sora.ryokka.service.ResourceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +16,28 @@ import java.util.Optional;
 public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepository resourceRepository;
+    private final ProjectRepository projectRepository; // Add ProjectRepository to fetch projects
 
-    public ResourceServiceImpl(ResourceRepository resourceRepository) {
+    public ResourceServiceImpl(ResourceRepository resourceRepository, ProjectRepository projectRepository) {
         this.resourceRepository = resourceRepository;
+        this.projectRepository = projectRepository;
+    }
+
+    @Override
+    public Resource createResource(CreateResourceRequest request) {
+        Project project = projectRepository.findById(request.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + request.getProjectId()));
+
+        Resource resource = new Resource();
+        resource.setResourceName(request.getResourceName());
+        resource.setResourceDescription(request.getResourceDescription());
+        resource.setResourceType(request.getResourceType());
+        resource.setUnitOfMeasure(request.getUnitOfMeasure());
+        resource.setUnitCost(request.getUnitCost());
+        resource.setQuantity(request.getQuantity());
+        resource.setGeneralPrice(request.getGeneralPrice());
+        resource.setProject(project);  // Set the associated project
+        return resourceRepository.save(resource);
     }
 
     @Override
@@ -24,33 +46,38 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public Optional<Resource> getResourceById(int resourceId) {
+    public Optional<Resource> getResourceById(Long resourceId) {
         return resourceRepository.findById(resourceId);
     }
 
     @Override
-    public Resource createResource(Resource resource) {
+    public List<Resource> getResourcesByProjectId(Long projectId) {
+        return resourceRepository.findByProjectProjectId(projectId);
+    }
+
+    @Override
+    public Resource updateResource(Long resourceId, CreateResourceRequest request) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
+
+        Project project = projectRepository.findById(request.getProjectId())
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + request.getProjectId()));
+
+        resource.setResourceName(request.getResourceName());
+        resource.setResourceDescription(request.getResourceDescription());
+        resource.setResourceType(request.getResourceType());
+        resource.setUnitOfMeasure(request.getUnitOfMeasure());
+        resource.setUnitCost(request.getUnitCost());
+        resource.setQuantity(request.getQuantity());
+        resource.setGeneralPrice(request.getGeneralPrice());
+        resource.setProject(project);  // Update the associated project
         return resourceRepository.save(resource);
     }
 
     @Override
-    public Resource updateResource(int resourceId, Resource updatedResource) {
-        return resourceRepository.findById(resourceId)
-                .map(resource -> {
-                    resource.setResourceName(updatedResource.getResourceName());
-                    resource.setResourceDescription(updatedResource.getResourceDescription());
-                    resource.setResourceType(updatedResource.getResourceType());
-                    resource.setUnitOfMeasure(updatedResource.getUnitOfMeasure());
-                    resource.setUnitCost(updatedResource.getUnitCost());
-                    resource.setQuantity(updatedResource.getQuantity());
-                    resource.setGeneralPrice(updatedResource.getGeneralPrice());
-                    return resourceRepository.save(resource);
-                })
-                .orElseThrow(() -> new RuntimeException("Resource not found"));
-    }
-
-    @Override
-    public void deleteResource(int resourceId) {
-        resourceRepository.deleteById(resourceId);
+    public void deleteResource(Long resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found with id: " + resourceId));
+        resourceRepository.delete(resource);
     }
 }
