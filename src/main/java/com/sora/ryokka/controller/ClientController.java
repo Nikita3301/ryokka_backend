@@ -16,8 +16,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/clients")
 public class ClientController {
 
-    @Autowired
-    private ClientService clientService;
+    private final ClientService clientService;
+
+    public ClientController(ClientService clientService) {
+        this.clientService = clientService;
+    }
 
     @PostMapping
     public ResponseEntity<ClientDataResponse> createClient(@RequestBody Client client) {

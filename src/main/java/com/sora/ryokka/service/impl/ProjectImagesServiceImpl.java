@@ -78,12 +78,18 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
     @Override
     public String uploadProjectImage(MultipartFile file, Long projectId, LocalDate date) {
+        String imageUrl = null;
+        File tempFile = null;
         try {
             String fileName = file.getOriginalFilename();
-            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
-
-            File tempFile = this.convertToFile(file, fileName);
-            String imageUrl = this.uploadFile(tempFile, fileName);
+            if (fileName != null) {
+                fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
+                tempFile = new File(fileName);
+                try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                    fos.write(file.getBytes());
+                }
+                imageUrl = this.uploadFile(tempFile, fileName);
+            }
 
             Project project = projectRepository.findById(projectId)
                     .orElseThrow(() -> new RuntimeException("Project not found"));
@@ -97,8 +103,13 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
             return imageUrl;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Image upload failed", e);
+        }finally {
+            if (tempFile != null && tempFile.exists()) {
+                if (!tempFile.delete()) {
+                    System.err.println("Failed to delete temporary file: " + tempFile.getAbsolutePath());
+                }
+            }
         }
     }
 
@@ -119,7 +130,6 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
                 File tempFile = this.convertToFile(file, fileName);
                 String imageUrl = this.uploadFile(tempFile, fileName);
-                tempFile.delete();
 
                 ProjectImage projectImage = new ProjectImage();
                 projectImage.setUrl(imageUrl);
@@ -132,7 +142,6 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Image upload failed", e);
         }
 

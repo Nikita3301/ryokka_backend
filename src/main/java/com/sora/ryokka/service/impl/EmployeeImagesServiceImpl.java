@@ -25,8 +25,11 @@ import java.util.UUID;
 @Service
 public class EmployeeImagesServiceImpl implements EmployeeImagesService {
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
+    private final EmployeeRepository employeeRepository;
+
+    public EmployeeImagesServiceImpl(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
 
     private String uploadFile(File file, String fileName) throws IOException {
         BlobId blobId = BlobId.of("ryokka-359c6.appspot.com", fileName); // Replace with your bucket name
@@ -40,33 +43,28 @@ public class EmployeeImagesServiceImpl implements EmployeeImagesService {
         return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
     }
 
-    private File convertToFile(MultipartFile multipartFile, String fileName) throws IOException {
-        File tempFile = new File(fileName);
-        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-            fos.write(multipartFile.getBytes());
-        }
-        return tempFile;
-    }
-
     private String getExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
     @Override
     public String uploadEmployeeImage(MultipartFile file, Long employeeId) {
+        String imageUrl = null;
+        File tempFile = null;
         try {
             String fileName = file.getOriginalFilename();
-            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
-
-            File tempFile = this.convertToFile(file, fileName);
-            String imageUrl = this.uploadFile(tempFile, fileName);
-            tempFile.delete();
-
+            if (fileName != null) {
+                fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
+                tempFile = new File(fileName);
+                try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                    fos.write(file.getBytes());
+                }
+                imageUrl = this.uploadFile(tempFile, fileName);
+            }
             updateEmployeeImage(employeeId, imageUrl);
 
             return imageUrl;
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Image upload failed", e);
         }
     }

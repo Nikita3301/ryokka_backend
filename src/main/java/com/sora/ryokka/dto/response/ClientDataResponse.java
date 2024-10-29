@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public record ClientDataResponse(
         @JsonProperty("clientId")
-        int clientId,
+        Long clientId,
         @JsonProperty("firstName")
         String firstName,
         @JsonProperty("lastName")
