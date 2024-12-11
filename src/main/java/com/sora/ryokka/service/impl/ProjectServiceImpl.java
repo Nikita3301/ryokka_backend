@@ -38,17 +38,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public DetailsProjectDataResponse createProject(CreateProjectRequest projectRequest) {
-
-        System.out.println("Creating project with the following details:");
-        System.out.println("Project Name: " + projectRequest.projectName());
-        System.out.println("Project Description: " + projectRequest.projectDescription());
-        System.out.println("Project Location: " + projectRequest.projectLocation());
-        System.out.println("Project Status: " + projectRequest.projectStatus());
-        System.out.println("Start Date: " + projectRequest.startDate());
-        System.out.println("End Date: " + projectRequest.endDate());
-        System.out.println("Budget: " + projectRequest.projectBudget());
-        System.out.println("Client ID: " + projectRequest.clientId());
-
         Client client = clientRepository.findById(projectRequest.clientId())
                 .orElseThrow(() -> new EntityNotFoundException("Client not found with ID: " + projectRequest.clientId()));
 

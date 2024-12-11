@@ -35,21 +35,15 @@ public class InvoiceController {
     @GetMapping("/{id}")
     public ResponseEntity<Invoice> getInvoiceById(@PathVariable Long id) {
         Optional<Invoice> invoice = invoiceService.getInvoiceById(id);
-        return invoice.map(i -> new ResponseEntity<>(i, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return invoice.map(i -> new ResponseEntity<>(i, HttpStatus.OK)).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/project/{projectId}")
     public ResponseEntity<List<InvoiceDataResponse>> getInvoicesByProjectId(@PathVariable Long projectId) {
         List<Invoice> invoices = invoiceService.getInvoicesByProjectId(projectId);
+        List<InvoiceDataResponse> invoiceResponses = invoices.stream().map(InvoiceDataResponse::new).collect(Collectors.toList());
 
-        // Map Invoice entities to InvoiceDataResponse
-        List<InvoiceDataResponse> invoiceResponses = invoices.stream()
-                .map(InvoiceDataResponse::new)
-                .collect(Collectors.toList());
-
-        return invoiceResponses.isEmpty() ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-                : new ResponseEntity<>(invoiceResponses, HttpStatus.OK);
+        return invoiceResponses.isEmpty() ? new ResponseEntity<>(HttpStatus.NO_CONTENT) : new ResponseEntity<>(invoiceResponses, HttpStatus.OK);
     }
 
 

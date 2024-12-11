@@ -2,8 +2,10 @@ package com.sora.ryokka.service;
 
 import com.sora.ryokka.dto.response.ImageDataResponse;
 import com.sora.ryokka.model.ProjectImage;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,5 +24,5 @@ public interface ProjectImagesService {
 
     List<String> uploadProjectImages(List<MultipartFile> files, List<LocalDate> dates, Long projectId);
 
-    void deleteImageById(Long imageId);
+    ResponseEntity<?> deleteImageById(Long imageId);
 }

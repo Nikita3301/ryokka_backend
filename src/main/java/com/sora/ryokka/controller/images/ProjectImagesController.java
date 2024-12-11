@@ -95,11 +95,6 @@ public class ProjectImagesController {
 
     @DeleteMapping("/images/{imageId}")
     public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
-        try {
-            projectImagesService.deleteImageById(imageId);
-            return ResponseEntity.ok("Image deleted successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
+        return projectImagesService.deleteImageById(imageId);
     }
 }

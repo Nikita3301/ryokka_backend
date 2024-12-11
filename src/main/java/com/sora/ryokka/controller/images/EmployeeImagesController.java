@@ -10,8 +10,11 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/employee-images")
 public class EmployeeImagesController {
 
-    @Autowired
-    private EmployeeService employeeService;
+    private final EmployeeService employeeService;
+
+    public EmployeeImagesController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
 
 
     @PostMapping("/{employeeId}/upload")

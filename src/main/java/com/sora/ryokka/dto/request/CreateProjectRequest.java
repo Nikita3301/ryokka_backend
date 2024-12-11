@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.sql.Date;
-import java.time.LocalDate;
 
 public record CreateProjectRequest(
         @NotBlank

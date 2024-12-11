@@ -1,4 +1,4 @@
-package com.sora.ryokka.auth;
+package com.sora.ryokka.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

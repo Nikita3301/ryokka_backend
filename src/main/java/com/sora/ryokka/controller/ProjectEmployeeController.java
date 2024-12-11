@@ -1,11 +1,8 @@
 package com.sora.ryokka.controller;
 
-import com.sora.ryokka.dto.request.ProjectEmployeeRequest;
 import com.sora.ryokka.model.Employee;
 import com.sora.ryokka.model.Project;
 import com.sora.ryokka.service.ProjectEmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +13,11 @@ import java.util.List;
 @RequestMapping("/api/project-employees")
 public class ProjectEmployeeController {
 
-    @Autowired
-    private ProjectEmployeeService projectEmployeeService;
+    private final ProjectEmployeeService projectEmployeeService;
+
+    public ProjectEmployeeController(ProjectEmployeeService projectEmployeeService) {
+        this.projectEmployeeService = projectEmployeeService;
+    }
 
     @PostMapping("/assign")
     public ResponseEntity<String> assignEmployeeToProject(@RequestParam Long employeeId,

@@ -5,54 +5,41 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.Gson;
-import com.sora.ryokka.auth.FirebaseConfigProperties;
 import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.ClassPathResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 
 @Configuration
 public class FirebaseConfig {
 
-    private static final Logger log = LoggerFactory.getLogger(FirebaseConfig.class);
+    private final FirebaseConfigProperties firebaseConfigProperties;
 
-    @Autowired private FirebaseConfigProperties firebaseConfigProperties;
+    public FirebaseConfig(FirebaseConfigProperties firebaseConfigProperties) {
+        this.firebaseConfigProperties = firebaseConfigProperties;
+    }
 
     @PostConstruct
     public void initialize() throws IOException {
-        try {
 
-            firebaseConfigProperties.setPrivate_key(
-                    firebaseConfigProperties.getPrivate_key().replace("\\n", "\n"));
+        firebaseConfigProperties.setPrivate_key(
+                firebaseConfigProperties.getPrivate_key().replace("\\n", "\n"));
 
-            String json = new Gson().toJson(firebaseConfigProperties);
+        String json = new Gson().toJson(firebaseConfigProperties);
 
-            GoogleCredentials credentials =
-                    GoogleCredentials.fromStream(new ByteArrayInputStream(json.getBytes()));
+        GoogleCredentials credentials =
+                GoogleCredentials.fromStream(new ByteArrayInputStream(json.getBytes()));
 
-            FirebaseOptions options =
-                    FirebaseOptions.builder()
-                            .setCredentials(credentials)
-                            .setDatabaseUrl(firebaseConfigProperties.getUrl())
-                            .build();
+        FirebaseOptions options =
+                FirebaseOptions.builder()
+                        .setCredentials(credentials)
+                        .setDatabaseUrl(firebaseConfigProperties.getUrl())
+                        .build();
 
-            FirebaseApp.initializeApp(options);
-
-            log.info("Firebase initialized for URL {}", firebaseConfigProperties.getUrl());
-        } catch (IOException e) {
-            log.error("Firebase config error", e);
-            throw e;
-        }
+        FirebaseApp.initializeApp(options);
     }
 
     @Bean

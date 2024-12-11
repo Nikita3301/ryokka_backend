@@ -6,8 +6,6 @@ import com.sora.ryokka.dto.response.EmployeeDataResponse;
 import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Employee;
 import com.sora.ryokka.service.EmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,7 +57,7 @@ public class EmployeeController {
 
     // Update an employee
     @PutMapping
-    public ResponseEntity<EmployeeDataResponse> updateEmployee(@RequestParam(value="imageFile", required = false) MultipartFile imageFile, @ModelAttribute UpdateEmployeeRequest updateEmployeeRequest) {
+    public ResponseEntity<EmployeeDataResponse> updateEmployee(@RequestParam(value = "imageFile", required = false) MultipartFile imageFile, @ModelAttribute UpdateEmployeeRequest updateEmployeeRequest) {
         return employeeService.updateEmployee(imageFile, updateEmployeeRequest);
     }
 
@@ -73,8 +71,6 @@ public class EmployeeController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
 
 
 }

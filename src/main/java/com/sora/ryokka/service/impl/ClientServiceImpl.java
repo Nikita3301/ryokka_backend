@@ -1,9 +1,13 @@
 package com.sora.ryokka.service.impl;
 
+import com.sora.ryokka.dto.request.CreateClientRequest;
 import com.sora.ryokka.dto.response.ClientDataResponse;
+import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Client;
 import com.sora.ryokka.repository.ClientRepository;
 import com.sora.ryokka.service.ClientService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -36,10 +40,19 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ClientDataResponse createClient(Client client) {
-        Client newClient = clientRepository.save(client);
+    public ClientDataResponse createClient(CreateClientRequest createClientRequest) {
+        Client newClient = new Client();
+        newClient.setFirstName(createClientRequest.firstName());
+        newClient.setLastName(createClientRequest.lastName());
+        newClient.setContactEmail(createClientRequest.contactEmail());
+        newClient.setContactPhone(createClientRequest.contactPhone());
+
+        newClient = clientRepository.save(newClient);
+
         return new ClientDataResponse(newClient);
     }
+
+
 
     @Override
     public Client updateClient(Long clientId, Client updatedClient) {
@@ -55,8 +68,13 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public void deleteClient(Long clientId) {
+    public ResponseEntity<?> deleteClient(Long clientId) {
+        if (!clientRepository.existsById(clientId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Client not found with id: " + clientId);
+        }
         clientRepository.deleteById(clientId);
+        return ResponseEntity.ok("Client deleted successfully");
     }
 }
 

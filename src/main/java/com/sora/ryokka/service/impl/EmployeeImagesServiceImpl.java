@@ -9,7 +9,6 @@ import com.google.cloud.storage.StorageOptions;
 import com.sora.ryokka.model.Employee;
 import com.sora.ryokka.repository.EmployeeRepository;
 import com.sora.ryokka.service.EmployeeImagesService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,23 +24,26 @@ import java.util.UUID;
 @Service
 public class EmployeeImagesServiceImpl implements EmployeeImagesService {
 
+    private static final String BUCKET_NAME = "ryokka-359c6.appspot.com";
+    private static final String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media";
+    private final Storage storage;
     private final EmployeeRepository employeeRepository;
 
-    public EmployeeImagesServiceImpl(EmployeeRepository employeeRepository) {
+    public EmployeeImagesServiceImpl(EmployeeRepository employeeRepository) throws IOException {
         this.employeeRepository = employeeRepository;
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("firebase/firebase_config.json");
+        Credentials credentials = GoogleCredentials.fromStream(inputStream);
+        this.storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
     }
 
     private String uploadFile(File file, String fileName) throws IOException {
-        BlobId blobId = BlobId.of("ryokka-359c6.appspot.com", fileName); // Replace with your bucket name
+        BlobId blobId = BlobId.of(BUCKET_NAME, fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("image/jpeg").build();
-        InputStream inputStream = EmployeeImagesServiceImpl.class.getClassLoader().getResourceAsStream("firebase/firebase_config.json");
-        Credentials credentials = GoogleCredentials.fromStream(inputStream);
-        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
-        String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/ryokka-359c6.appspot.com/o/%s?alt=media";
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+        return String.format(DOWNLOAD_URL, BUCKET_NAME, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
     }
+
 
     private String getExtension(String fileName) {
         return fileName.substring(fileName.lastIndexOf("."));
@@ -60,12 +62,16 @@ public class EmployeeImagesServiceImpl implements EmployeeImagesService {
                     fos.write(file.getBytes());
                 }
                 imageUrl = this.uploadFile(tempFile, fileName);
+                updateEmployeeImage(employeeId, imageUrl);
             }
-            updateEmployeeImage(employeeId, imageUrl);
-
             return imageUrl;
-        } catch (Exception e) {
+        } catch (IOException e) {
+            System.err.println("Error uploading employee image: " + e.getMessage());
             throw new RuntimeException("Image upload failed", e);
+        }finally {
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
         }
     }
 

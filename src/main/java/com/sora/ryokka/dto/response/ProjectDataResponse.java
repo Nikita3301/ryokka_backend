@@ -31,7 +31,6 @@ public record ProjectDataResponse(
         );
     }
 
-    // Helper method to fetch the main image URL without using streams
     private static String getMainImageUrl(Project project) {
         for (ProjectImage projectImage : project.getProjectImages()) {
             if (projectImage.getIsMainImage()) {

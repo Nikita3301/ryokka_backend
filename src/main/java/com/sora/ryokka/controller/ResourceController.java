@@ -5,7 +5,6 @@ import com.sora.ryokka.dto.response.ResourceDataResponse;
 import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Resource;
 import com.sora.ryokka.service.ResourceService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +26,6 @@ public class ResourceController {
     @GetMapping
     public ResponseEntity<List<ResourceDataResponse>> getAllResources() {
         List<Resource> resources = resourceService.getAllResources();
-
-        // Map Resource entities to ResourceDataResponse
         List<ResourceDataResponse> resourceResponses = resources.stream()
                 .map(ResourceDataResponse::new)
                 .collect(Collectors.toList());

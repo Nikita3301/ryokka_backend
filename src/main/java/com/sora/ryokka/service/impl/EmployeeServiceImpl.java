@@ -12,6 +12,8 @@ import com.sora.ryokka.dto.response.EmployeeDataResponse;
 import com.sora.ryokka.model.Employee;
 import com.sora.ryokka.repository.EmployeeRepository;
 import com.sora.ryokka.service.EmployeeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,10 +31,18 @@ import java.util.UUID;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
-    private final EmployeeRepository employeeRepository;
+    private static final String BUCKET_NAME = "ryokka-359c6.appspot.com"; // Replace with your bucket name
+    private static final String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media";
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+    private final EmployeeRepository employeeRepository;
+    private final Storage storage;
+    private final Logger logger = LoggerFactory.getLogger(EmployeeServiceImpl.class);
+
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) throws IOException {
         this.employeeRepository = employeeRepository;
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("firebase/firebase_config.json");
+        Credentials credentials = GoogleCredentials.fromStream(inputStream);
+        this.storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
     }
 
     @Override
@@ -49,11 +59,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     public ResponseEntity<?> createEmployee(MultipartFile imageFile, CreateEmployeeRequest createEmployeeRequest) {
         try {
             Employee newEmployee = new Employee();
-            String fileName = imageFile.getOriginalFilename();
-            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
-
-            File tempFile = this.convertToFile(imageFile, fileName);
-            String imageUrl = this.uploadFile(tempFile, fileName);
+            String fileName = UUID.randomUUID().toString().concat(this.getExtension(imageFile.getOriginalFilename()));
+            File tempFile = convertToFile(imageFile, fileName);
+            String imageUrl = uploadFile(tempFile, fileName);
 
             newEmployee.setFirstName(createEmployeeRequest.firstName());
             newEmployee.setLastName(createEmployeeRequest.lastName());
@@ -61,12 +69,15 @@ public class EmployeeServiceImpl implements EmployeeService {
             newEmployee.setPhoneNumber(createEmployeeRequest.phoneNumber());
             newEmployee.setEmail(createEmployeeRequest.email());
             newEmployee.setImageUrl(imageUrl);
+
             employeeRepository.save(newEmployee);
-            return ResponseEntity.ok(newEmployee);
+            logger.info("Employee created successfully: {}", newEmployee);
+
+            return ResponseEntity.ok(new EmployeeDataResponse(newEmployee));
         } catch (Exception e) {
+            logger.error("Failed to create employee", e);
             return ResponseEntity.status(500).body("Failed to create employee: " + e.getMessage());
         }
-
     }
 
     @Override
@@ -80,62 +91,61 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.setPhoneNumber(updateEmployeeRequest.phoneNumber());
             employee.setEmail(updateEmployeeRequest.email());
 
-
             if (imageFile != null && !imageFile.isEmpty()) {
                 try {
-                    String fileName = imageFile.getOriginalFilename();
-                    fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
-                    File tempFile = this.convertToFile(imageFile, fileName);
-                    String imageUrl = this.uploadFile(tempFile, fileName);
+                    String fileName = UUID.randomUUID().toString().concat(this.getExtension(imageFile.getOriginalFilename()));
+                    File tempFile = convertToFile(imageFile, fileName);
+                    String imageUrl = uploadFile(tempFile, fileName);
                     employee.setImageUrl(imageUrl);
+                    deleteTempFile(tempFile);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    logger.error("Failed to update employee image", e);
+                    throw new RuntimeException("Failed to update employee image", e);
                 }
             }
 
             employeeRepository.save(employee);
+            logger.info("Employee updated successfully: {}", employee);
             return ResponseEntity.ok(new EmployeeDataResponse(employee));
         }
+        logger.warn("Employee not found with id {}", updateEmployeeRequest.employeeId());
         throw new RuntimeException("Employee not found with id " + updateEmployeeRequest.employeeId());
     }
 
     @Override
     public void deleteEmployee(Long id) {
         employeeRepository.deleteById(id);
+        logger.info("Employee deleted with id {}", id);
     }
 
     @Override
     public String uploadEmployeeImage(MultipartFile file, Long employeeId) {
         try {
-            String fileName = file.getOriginalFilename();
-            fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
-
-            File tempFile = this.convertToFile(file, fileName);
-            String imageUrl = this.uploadFile(tempFile, fileName);
-
+            String fileName = UUID.randomUUID().toString().concat(this.getExtension(file.getOriginalFilename()));
+            File tempFile = convertToFile(file, fileName);
+            String imageUrl = uploadFile(tempFile, fileName);
             updateEmployeeImage(employeeId, imageUrl);
-
+            deleteTempFile(tempFile);
             return imageUrl;
         } catch (Exception e) {
+            logger.error("Image upload failed", e);
             throw new RuntimeException("Image upload failed", e);
         }
     }
 
-
     @Override
     public void updateEmployeeImage(Long employeeId, String imageUrl) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
         employee.setImageUrl(imageUrl);
         employeeRepository.save(employee);
     }
-
 
     private File convertToFile(MultipartFile multipartFile, String fileName) throws IOException {
         File tempFile = new File(fileName);
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             fos.write(multipartFile.getBytes());
         }
+        tempFile.deleteOnExit();
         return tempFile;
     }
 
@@ -144,15 +154,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private String uploadFile(File file, String fileName) throws IOException {
-        BlobId blobId = BlobId.of("ryokka-359c6.appspot.com", fileName); // Replace with your bucket name
+        BlobId blobId = BlobId.of(BUCKET_NAME, fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("media").build();
-        InputStream inputStream = EmployeeImagesServiceImpl.class.getClassLoader().getResourceAsStream("firebase/firebase_config.json"); // change the file name with your one
-        Credentials credentials = GoogleCredentials.fromStream(inputStream);
-        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-        storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
-        String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/ryokka-359c6.appspot.com/o/%s?alt=media";
-        return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+        storage.create(blobInfo, Files.readAllBytes(file.toPath()));
+        return String.format(DOWNLOAD_URL, BUCKET_NAME, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+    }
+
+    private void deleteTempFile(File tempFile) throws IOException {
+        if (tempFile.exists()) {
+            boolean deleted = Files.deleteIfExists(tempFile.toPath());
+            if (!deleted) {
+                System.err.println("Failed to delete temporary file: " + tempFile.getAbsolutePath());
+            }
+        }
     }
 
 }

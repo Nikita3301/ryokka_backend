@@ -7,11 +7,14 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.sora.ryokka.dto.response.ImageDataResponse;
+import com.sora.ryokka.exception.ResourceNotFoundException;
 import com.sora.ryokka.model.Project;
 import com.sora.ryokka.model.ProjectImage;
 import com.sora.ryokka.repository.ImageRepository;
 import com.sora.ryokka.repository.ProjectRepository;
 import com.sora.ryokka.service.ProjectImagesService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +25,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,8 +95,11 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
                 imageUrl = this.uploadFile(tempFile, fileName);
             }
 
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new RuntimeException("Project not found"));
+            if (tempFile != null) {
+                deleteTempFile(tempFile);
+            }
+
+            Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
 
             ProjectImage projectImage = new ProjectImage();
             projectImage.setUrl(imageUrl);
@@ -104,22 +111,16 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
             return imageUrl;
         } catch (Exception e) {
             throw new RuntimeException("Image upload failed", e);
-        }finally {
-            if (tempFile != null && tempFile.exists()) {
-                if (!tempFile.delete()) {
-                    System.err.println("Failed to delete temporary file: " + tempFile.getAbsolutePath());
-                }
-            }
         }
     }
+
 
     @Override
     public List<String> uploadProjectImages(List<MultipartFile> files, List<LocalDate> dates, Long projectId) {
         List<String> imageUrls = new ArrayList<>();
 
         try {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new RuntimeException("Project not found"));
+            Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
 
             for (int i = 0; i < files.size(); i++) {
                 MultipartFile file = files.get(i);
@@ -127,18 +128,20 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
                 String fileName = file.getOriginalFilename();
                 fileName = UUID.randomUUID().toString().concat(this.getExtension(fileName));
-
                 File tempFile = this.convertToFile(file, fileName);
-                String imageUrl = this.uploadFile(tempFile, fileName);
+                try {
+                    String imageUrl = this.uploadFile(tempFile, fileName);
+                    ProjectImage projectImage = new ProjectImage();
+                    projectImage.setUrl(imageUrl);
+                    projectImage.setFileName(fileName);
+                    projectImage.setProject(project);
+                    projectImage.setDate(date);
+                    imageRepository.save(projectImage);
+                    imageUrls.add(imageUrl);
+                } finally {
+                    deleteTempFile(tempFile);
+                }
 
-                ProjectImage projectImage = new ProjectImage();
-                projectImage.setUrl(imageUrl);
-                projectImage.setFileName(fileName);
-                projectImage.setProject(project);
-                projectImage.setDate(date);
-                imageRepository.save(projectImage);
-
-                imageUrls.add(imageUrl);
             }
 
         } catch (Exception e) {
@@ -151,8 +154,7 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
 
     @Override
     public void setMainImage(Long imageId, Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
 
         ProjectImage currentMainImage = imageRepository.findByProjectAndIsMainImageTrue(project);
         if (currentMainImage != null) {
@@ -160,29 +162,41 @@ public class ProjectImagesServiceImpl implements ProjectImagesService {
             imageRepository.save(currentMainImage);
         }
 
-        ProjectImage newMainImage = imageRepository.findById(imageId)
-                .orElseThrow(() -> new RuntimeException("Image not found"));
+        ProjectImage newMainImage = imageRepository.findById(imageId).orElseThrow(() -> new RuntimeException("Image not found"));
         newMainImage.setIsMainImage(true);
         imageRepository.save(newMainImage);
     }
 
     @Override
     public List<ProjectImage> getProjectImages(Long projectId) {
-        System.out.println("Result" +
-                imageRepository.findByProjectProjectId(projectId));
         return imageRepository.findByProjectProjectId(projectId);
     }
 
     @Override
     public ProjectImage getMainImage(Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
         return imageRepository.findByProjectAndIsMainImageTrue(project);
     }
 
 
-@Override
-    public void deleteImageById(Long imageId) {
+    @Override
+    public ResponseEntity<?> deleteImageById(Long imageId) {
+        if (!imageRepository.existsById(imageId)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Image not found with id: " + imageId);
+        }
         imageRepository.deleteById(imageId);
+        return ResponseEntity.ok().body("Image deleted successfully.");
     }
+
+    private void deleteTempFile(File tempFile) throws IOException {
+        if (tempFile.exists()) {
+            boolean deleted = Files.deleteIfExists(tempFile.toPath());
+            if (!deleted) {
+                System.err.println("Failed to delete temporary file: " + tempFile.getAbsolutePath());
+            }
+        }
+    }
+
+
 }
